@@ -7,7 +7,10 @@ from logging.handlers import RotatingFileHandler
 import os
 import gzip
 
-__version__ = ''
+__version__ = '0.2'
+_filename = 'app.log'
+_loglvl = logging.DEBUG
+
 
 class MyRotatingFileHandler(logging.handlers.RotatingFileHandler):
     def __init__(self, filename, **kws):
@@ -48,22 +51,29 @@ class MyRotatingFileHandler(logging.handlers.RotatingFileHandler):
             self.doArchive(dfn)
         if not self.delay:
             self.stream = self._open()
- 
+            
+_c_handler = logging.StreamHandler()
+_c_handler.setLevel(_loglvl)
+_cformat = logging.Formatter('%(asctime)s - %(levelname)-8s [%(module)s.%(funcName)s:%(lineno)d]: %(message)s',)
+_c_handler.setFormatter(_cformat)
  
 
 logging.basicConfig(
-        handlers=[MyRotatingFileHandler('app.log',         # file log baseName,
+        handlers=[MyRotatingFileHandler(_filename,         # file log baseName,
                                         maxBytes=80000000, # 80MB for each raw file,
                                         backupCount=8)],   # 8 file will be keep
-        level=logging.INFO,
+        level=_loglvl,
         format='%(asctime)s - %(levelname)-8s [%(module)s.%(funcName)s:%(lineno)d]: %(message)s',
         datefmt='%Y-%m-%dT%H:%M:%S')
 
+_logger = logging.getLogger(__name__)
 
-log = logging.info
-logerr = logging.error
-logdbg = logging.debug
-logwrn = logging.warning
+_logger.addHandler(_c_handler)
+
+log = _logger.info
+logerr = _logger.error
+logdbg = _logger.debug
+logwrn = _logger.warning
 
 
 if __name__ == "__main__":
