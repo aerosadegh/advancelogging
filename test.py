@@ -38,5 +38,5 @@ def test_func(num, char, p=False, q=None):
     return res
 
 
-for i in range(-10, 50):
+for i in range(-5, 5):
     test_func(i, "A", p=bool(i), q=i*2)
