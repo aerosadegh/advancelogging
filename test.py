@@ -1,42 +1,53 @@
-from logger import get_funcs
+from functools import wraps
+import logging
+
+from logger import get_logger
 
 
-log, logdbg, logwrn, logerr = get_funcs("my Logger", maxByte=7000, backupCount=5, filename="mylogfile.log")
-
+logger = get_logger(
+    "my Logger",
+    maxByte=7000,
+    backupCount=5,
+    filename="my_log.log",
+)
 
 
 def log_deco(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        kwst = ""
-        for k in kwargs:
-            kwst += f"{k}={kwargs[k]}, "
-
+        kw_str = ", ".join(f"{k}={v}" for k, v in kwargs.items())
+        arg_str = ", ".join(map(str, args))
+        args_str = f"{arg_str}, {kw_str}".strip(", ")
+        logger.info(f"Calling {func.__name__}({args_str})...")
         try:
-            log(f"Calling {func.__name__}{str(args).rstrip(') ')}, {kwst.strip(' ,')})...")
             res = func(*args, **kwargs)
         except Exception as e:
-            logerr(f"Error Occurred: {e}", exc_info=True)
+            logger.error(f"Error Occurred: {e}", exc_info=True)
         else:
-            log(f"Return {str(type(res)).strip('<>')[6:]}:> {res!r} ")
+            logger.info(f"Return {type(res).__name__}: {res!r}")
             return res
 
     return wrapper
 
 
-
-
 @log_deco
 def test_func(num, char, p=False, q=None):
-    res = char*num
+    res = char * num
     if p:
         print(res)
-        
+
     ### raise Handy Error
-    if num<0:
+    if num < 0:
         raise ValueError(f"num must be non-negative:(got {num})")
 
     return res
 
 
-for i in range(-5, 5):
-    test_func(i, "A", p=bool(i), q=i*2)
+for i in range(-5, 50):
+    # test_func(i, "A", p=bool(i), q=i * 2)
+    pass
+for iii in range(2):
+    try:
+        1 / 0
+    except Exception as e:
+        logger.error(f"{e} - {iii}", exc_info=True)
